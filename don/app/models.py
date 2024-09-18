@@ -38,10 +38,18 @@ class DonationArea(models.Model):
     def __str__(self):
         return self.areaname
     
-
+DONATION_CHOICES=(
+    ('Food Donation','Food Donation'),
+    ('Cloth Donation','Cloth Donation'),
+    ('Footwear Donation','Footwear Donation'),
+    ('Furniture Donation','Furniture Donation'),
+    ('Books Donation','Books Donation'),
+    ('Vessel Donation','Vessel Donation'),
+    ('Other','Other'),
+)
 class Donation(models.Model):
     donor = models.ForeignKey(Donor, on_delete=models.CASCADE)
-    donationname = models.CharField(max_length=100, null=True)
+    donationname = models.CharField(choices=DONATION_CHOICES ,max_length=100, null=True)
     donationpic = models.ImageField(upload_to='donation', null=True, blank=True)
     collectionloc = models.CharField(max_length=300, null=True)
     description = models.CharField(max_length=300, null=True)

@@ -1,5 +1,9 @@
 from django.shortcuts import redirect, render
-
+from django.views import View
+from .models import  Donor, Volunteer
+from django.contrib.auth.models import User
+from django.contrib import messages
+from .forms import Userform, DonorSignupForm, VolunteerSignupForm
 # Create your views here.
 def index(request):
     return render(request, "index.html")
@@ -21,16 +25,73 @@ def login_volunteer(request):
     return render(request, "login-volunteer.html")
 
 
-def signup_donor(request):
-    return render(request, "signup_donor.html")
+class signup_donor(View):
+    def get(self,request):
+        form1 = Userform()
+        form2 = DonorSignupForm()
+        return render(request, "signup_donor.html",locals())
+    def post(self,request):
+        form1 = Userform(request.POST)
+        form2 = DonorSignupForm(request.POST)
+        if form1.is_valid() & form2.is_valid():
+            fn = request.POST["first_name"]
+            ln = request.POST["last_name"]
+            em = request.POST["email"]
+            us = request.POST["username"]
+            pwd = request.POST["password1"]
+            contact = request.POST["contact"]
+            userpic = request.FILES["userpic"]
+            address = request.POST["address"]
+            
+            try:
+                user=User.objects.create_user(first_name=fn, last_name=ln, email=em, username=us, password=pwd)
+                Donor.objects.create(user=user , contact=contact , userpic=userpic , address=address)
+                messages.success(request, 'Congratulations!! Donor Profile Created ')
+            except:
+                messages.warning(request, 'Profile Not Created')
+            
+        return render(request, "signup_donor.html", locals())
 
 
-def signup_volunteer(request):
-    return render(request, "signup_volunteer.html")
+class  signup_volunteer(View):
+    def get(self, request):
+        form1 = Userform()
+        form2 = VolunteerSignupForm()
+        return render(request, "signup_volunteer.html", {'form1': form1, 'form2': form2})
+
+    def post(self, request):
+        form1 = Userform(request.POST)
+        form2 = VolunteerSignupForm(request.POST, request.FILES)  # Make sure to include FILES for uploads
+
+        if form1.is_valid() and form2.is_valid():  # Use 'and' instead of '&'
+            fn = request.POST['first_name']
+            ln = request.POST["last_name"]
+            em = request.POST["email"]
+            us = request.POST["username"]
+            pwd = request.POST["password1"]
+            contact = request.POST["contact"]
+            userpic = request.FILES["userpic"]
+            idpic = request.FILES['idpic']
+            address = request.POST["address"]
+            aboutme = request.POST['aboutme']
+            
+            try:
+                user = User.objects.create_user(first_name=fn, last_name=ln, email=em, username=us, password=pwd)
+                Volunteer.objects.create(user=user, contact=contact, userpic=userpic, idpic=idpic, address=address, aboutme=aboutme, status='pending')
+                messages.success(request, 'Congratulations!! Volunteer Profile Created ')
+                return redirect('success_page')  # Redirect to a success page after creation
+            except Exception as e:
+                messages.warning(request, 'Profile Not Created: ' + str(e))
+        else:
+            messages.error(request, 'Please correct the errors below.')
+
+        return render(request, "signup_volunteer.html", {'form1': form1, 'form2': form2})  # Return forms even if invalid
+            
 
 
 def index_admin(request):
     return render(request, "index-admin.html")
+
 
 
 # admin dashboard

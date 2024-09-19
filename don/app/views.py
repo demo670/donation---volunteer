@@ -3,7 +3,8 @@ from django.views import View
 from .models import  Donor, Volunteer
 from django.contrib.auth.models import User
 from django.contrib import messages
-from .forms import Userform, DonorSignupForm, VolunteerSignupForm
+from django.contrib.auth import authenticate, login, logout
+from .forms import Userform, DonorSignupForm, VolunteerSignupForm, Loginform, MyPasswordChangeForm
 # Create your views here.
 def index(request):
     return render(request, "index.html")
@@ -13,16 +14,77 @@ def gallery(request):
     return render(request, "gallery.html")
 
 
-def login_admin(request):
-    return render(request, "login-admin.html")
+class login_admin(View):
+    def get(self,request):
+        form = Loginform()
+        return render(request, "login-admin.html", locals())
+    def post(self, request):
+        form = Loginform(request.POST)
+        us = request.POST['username']
+        pwd = request.POST['password']
+        try:
+            user = authenticate(username=us, password=pwd)
+            if user:
+                if user.is_staff:
+                    login(request, user)
+                    return redirect('/index-admin')
+                else:
+                    messages.warning(request,'Invalid Admin User')
+            else:
+                messages.warning(request,'Invalid username and password')
+        except:
+            messages.warning(request,'Login Failed')
+        return render(request, "login-admin.html", locals())
 
 
-def login_donor(request):
-    return render(request, "login-donor.html")
+
+class login_donor(View):
+    def get(self,request):
+        form = Loginform()
+        return render(request, "login-donor.html", locals())
+    def post(self, request):
+        form = Loginform(request.POST)
+        us = request.POST['username']
+        pwd = request.POST['password']
+        try:
+            user = authenticate(username=us, password=pwd)
+            if user:
+                donor_user = Donor.objects.filter(user_id=user.id)
+                if donor_user:
+                    login(request, user)
+                    return redirect('/index-donor')
+                else:
+                    messages.warning(request,'Invalid Donor User')
+            else:
+                messages.warning(request,'Invalid username and password')
+        except:
+            messages.warning(request,'Login Failed')
+        return render(request, "login-donor.html", locals())
+                
 
 
-def login_volunteer(request):
-    return render(request, "login-volunteer.html")
+class login_volunteer(View):
+    def get(self,request):
+        form = Loginform()
+        return render(request, "login-volunteer.html", locals())
+    def post(self, request):
+        form = Loginform(request.POST)
+        us = request.POST['username']
+        pwd = request.POST['password']
+        try:
+            user = authenticate(username=us, password=pwd)
+            if user:
+                vol_user =Volunteer.objects.filter(user_id=user.id)
+                if vol_user:
+                    login(request, user)
+                    return redirect('/index-volunteer')
+                else:
+                    messages.warning(request,'Invalid Donor User')
+            else:
+                messages.warning(request,'Invalid username and password')
+        except:
+            messages.warning(request,'Login Failed')
+        return render(request, "login-volunteer.html", locals())
 
 
 class signup_donor(View):
@@ -61,9 +123,9 @@ class  signup_volunteer(View):
 
     def post(self, request):
         form1 = Userform(request.POST)
-        form2 = VolunteerSignupForm(request.POST, request.FILES)  # Make sure to include FILES for uploads
+        form2 = VolunteerSignupForm(request.POST, request.FILES) 
 
-        if form1.is_valid() and form2.is_valid():  # Use 'and' instead of '&'
+        if form1.is_valid() and form2.is_valid():  
             fn = request.POST['first_name']
             ln = request.POST["last_name"]
             em = request.POST["email"]
@@ -79,13 +141,13 @@ class  signup_volunteer(View):
                 user = User.objects.create_user(first_name=fn, last_name=ln, email=em, username=us, password=pwd)
                 Volunteer.objects.create(user=user, contact=contact, userpic=userpic, idpic=idpic, address=address, aboutme=aboutme, status='pending')
                 messages.success(request, 'Congratulations!! Volunteer Profile Created ')
-                return redirect('success_page')  # Redirect to a success page after creation
+                return redirect('login_volunteer')
             except Exception as e:
                 messages.warning(request, 'Profile Not Created: ' + str(e))
         else:
             messages.error(request, 'Please correct the errors below.')
 
-        return render(request, "signup_volunteer.html", {'form1': form1, 'form2': form2})  # Return forms even if invalid
+        return render(request, "signup_volunteer.html", {'form1': form1, 'form2': form2}) 
             
 
 
@@ -163,7 +225,8 @@ def changepwd_admin(request):
     return render(request, "changepwd-admin.html")
 
 
-def logout(request):
+def logoutview(request):
+    logout(request)
     return redirect("index")
 
 
@@ -201,8 +264,31 @@ def profile_donor(request):
     return render(request, "profile-donor.html")
 
 
-def changepwd_donor(request):
-    return render(request, "changepwd-donor.html")
+class changepwd_donor(View):
+    def get(self,request):
+        form = MyPasswordChangeForm(request.user)
+        return render(request, "changepwd-donor.html", locals())
+    def post(self,request):
+        form = MyPasswordChangeForm(request.user, request.POST)
+        if not request.user.is_authenticated:
+            return redirect('/login-donor')
+        old = request.POST['old_password']
+        newpass = request.POST['new_password1']
+        confirmpass = request.POST['new_password2']
+        try:
+            if newpass == confirmpass:
+                user = User.objects.get(id=request.user.id)
+                if user.check_password(old):
+                    user.set_password(newpass)
+                    user.save()
+                    messages.success(request, 'Change Password Successfully')
+                else:
+                    messages.warning(request, 'Old Password not matched')
+            else:
+                messages.warning(request, 'Old Password and New Password are different')
+        except:
+            messages.warning(request, 'Failed to Change Password')
+        return render(request, "changepwd-donor.html", locals())
 
 
 # volunteer dashboard

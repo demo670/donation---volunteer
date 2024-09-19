@@ -1,7 +1,14 @@
 from django import forms
 from django.contrib.auth.models import User
 from .models import Donor,Volunteer
-from django.contrib.auth.forms import UserCreationForm
+from django.contrib.auth.forms import UserCreationForm, AuthenticationForm, UsernameField, PasswordChangeForm
+from django.contrib.auth import password_validation
+
+class Loginform(AuthenticationForm):
+    username = UsernameField(required=True, widget=forms.TextInput(attrs={'autofocus':'True',
+                'class':'form-control','placeholder':'Username'}))
+    password = forms.CharField(required=True,widget=forms.PasswordInput(attrs={'class':'form-control',
+                'placeholder':'Password'}))
 
 
 class Userform(UserCreationForm):
@@ -47,3 +54,13 @@ class VolunteerSignupForm(forms.ModelForm):
             "userpic":"User Picture",
             "idpic":"Id Product Picture"
         }
+
+
+class MyPasswordChangeForm(PasswordChangeForm):
+    old_password = forms.CharField(label="Old Password", strip=False, widget=forms.PasswordInput(attrs=
+    {'autocomplete':'current-password','autofocus':True, 'class':'form-control', 'placeholder':'Old password'}))
+    new_password1 = forms.CharField(label="New Password", strip=False, widget=forms.PasswordInput(attrs=
+    {'autocomplete':'new-password', 'class':'form-control', 'placeholder':'New password'}),
+    help_text = password_validation.password_validators_help_text_html())
+    new_password2 = forms.CharField(label="Confirm New Password", strip=False, widget=forms.PasswordInput(attrs=
+    {'autocomplete':'new-password', 'class':'form-control', 'placeholder':'Confirm password'}))

@@ -23,19 +23,17 @@ urlpatterns = [
     path("admin/", admin.site.urls),
     path("", views.index, name="index"),
     path("gallery/", views.gallery, name="gallery"),
-    path("login-admin/", views.login_admin, name="login_admin"),
-    path("login-donor/", views.login_donor, name="login_donor"),
-    path("login-volunteer/", views.login_volunteer, name="login_volunteer"),
+    path("login-admin/", views.login_admin.as_view(), name="login_admin"),
+    path("login-donor/", views.login_donor.as_view(), name="login_donor"),
+    path("login-volunteer/", views.login_volunteer.as_view(), name="login_volunteer"),
     path("signup-donor/", views.signup_donor.as_view(), name="signup_donor"),
     path("signup-volunteer/", views.signup_volunteer.as_view(), name="signup_volunteer"),
     path("index-admin/", views.index_admin, name="index_admin"),
-    # admin dashboard
     path("pending-donation/", views.pending_donation, name="pending_donation"),
     path("accepted-donation/", views.accepted_donation, name="accepted_donation"),
     path("rejected-donation/", views.rejected_donation, name="rejected_donation"),
     path(
-        "volunteerallocated-donation/",
-        views.volunteerallocated_donation,
+        "volunteerallocated-donation/",views.volunteerallocated_donation,
         name="volunteerallocated_donation",
     ),
     path("donationrec-admin/", views.donationrec_admin, name="donationrec_admin"),
@@ -43,8 +41,7 @@ urlpatterns = [
         "donationnotrec-admin/", views.donationnotrec_admin, name="donationnotrec_admin"
     ),
     path(
-        "donationdelivered-admin/",
-        views.donationdelivered_admin,
+        "donationdelivered-admin/",views.donationdelivered_admin,
         name="donationdelivered_admin",
     ),
     path("all-donations/", views.all_donations, name="all_donations"),
@@ -57,22 +54,18 @@ urlpatterns = [
     path("edit-area/<int:pid>", views.edit_area, name="edit_area"),
     path("manage-area/", views.manage_area, name="manage_area"),
     path("changepwd-admin/", views.changepwd_admin, name="changepwd_admin"),
-    path("logout/", views.logout, name="logout"),
-    # view details
+    path("logout/", views.logoutview, name="logout"),
     path(
-        "accepted-donationdetail/<int:pid>",
-        views.accepted_donationdetail,
+        "accepted-donationdetail/<int:pid>",views.accepted_donationdetail,
         name="accepted_donationdetail",
     ),
     path(
-        "view-volunteerdetail/<int:pid>",
-        views.view_volunteerdetail,
+        "view-volunteerdetail/<int:pid>",views.view_volunteerdetail,
         name="view_volunteerdetail",
     ),
     path("view-donordetail/<int:pid>", views.view_donordetail, name="view_donordetail"),
     path(
-        "view-donationdetail/<int:pid>",
-        views.view_donationdetail,
+        "view-donationdetail/<int:pid>",views.view_donationdetail,
         name="view_donationdetail",
     ),
     # donar dashboard
@@ -80,41 +73,35 @@ urlpatterns = [
     path("donate-now/", views.donate_now, name="donate_now"),
     path("donation-history/", views.donation_history, name="donation_history"),
     path("profile-donor/", views.profile_donor, name="profile_donor"),
-    path("changepwd-donor/", views.changepwd_donor, name="changepwd_donor"),
+    path("changepwd-donor/", views.changepwd_donor.as_view(), name="changepwd_donor"),
     # volunteer dashboard
     path("index-volunteer/", views.index_volunteer, name="index_volunteer"),
     path("collection-req/", views.collection_req, name="collection_req"),
     path(
-        "donationrec-volunteer/",
-        views.donationrec_volunteer,
+        "donationrec-volunteer/",views.donationrec_volunteer,
         name="donationrec_volunteer",
     ),
     path(
-        "donationnotrec-volunteer/",
-        views.donationnotrec_volunteer,
+        "donationnotrec-volunteer/",views.donationnotrec_volunteer,
         name="donationnotrec_volunteer",
     ),
     path(
-        "donationdelivered-volunteer/",
-        views.donationdelivered_volunteer,
+        "donationdelivered-volunteer/",views.donationdelivered_volunteer,
         name="donationdelivered_volunteer",
     ),
     path("profile-volunteer/", views.profile_volunteer, name="profile_volunteer"),
     path("changepwd-volunteer/", views.changepwd_volunteer, name="changepwd_volunteer"),
     # vew details
     path(
-        "donationdetail-donor/<int:pid>",
-        views.donationdetail_donor,
+        "donationdetail-donor/<int:pid>",views.donationdetail_donor,
         name="donationdetail_donor",
     ),
     path(
-        "donationrec-detail/<int:pid>",
-        views.donationrec_detail,
+        "donationrec-detail/<int:pid>",views.donationrec_detail,
         name="donationrec_detail",
     ),
     path(
-        "donationcollection-detail/<int:pid>",
-        views.donationcollection_detail,
+        "donationcollection-detail/<int:pid>",views.donationcollection_detail,
         name="donationcollection_detail",
     ),
 ]

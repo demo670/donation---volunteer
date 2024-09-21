@@ -39,10 +39,10 @@
         <div class="profile_content">
             <div class="profile">
                 <div class="profile_details">
-                    <img src="{% static 'images/donation.jpg' %}"  alt="" >
+                    <img src="{{request.user.donor_set.all.0.userpic.url}}"  alt="" >
                     <div class="name_job">
-                        <div class="name">Nilesh Borate</div>
-                        <div class="email">nilesh@gmail.com</div>
+                        <div class="name">{{request.user.first_name}} {{request.user.last_name}}</div>
+                        <div class="email">{{request.user.email}}</div>
                     </div>
                 </div>
             </div>

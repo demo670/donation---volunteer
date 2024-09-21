@@ -1,10 +1,11 @@
 from django.shortcuts import redirect, render
 from django.views import View
-from .models import  Donor, Volunteer
+from .models import  Donor, Volunteer, Donation
 from django.contrib.auth.models import User
 from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
-from .forms import Userform, DonorSignupForm, VolunteerSignupForm, Loginform, MyPasswordChangeForm
+from .forms import Userform, DonorSignupForm, VolunteerSignupForm, Loginform, MyPasswordChangeForm, DonateNowForm
+from datetime import date, datetime
 # Create your views here.
 def index(request):
     return render(request, "index.html")
@@ -221,8 +222,31 @@ def manage_area(request):
     return render(request, "manage-area.html")
 
 
-def changepwd_admin(request):
-    return render(request, "changepwd-admin.html")
+class changepwd_admin(View):
+    def get(self,request):
+        form = MyPasswordChangeForm(request.user)
+        return render(request, "changepwd-admin.html", locals())
+    def post(self,request):
+        form = MyPasswordChangeForm(request.user, request.POST)
+        if not request.user.is_authenticated:
+            return redirect('login_volunteer')
+        old = request.POST['old_password']
+        newpass = request.POST['new_password1']
+        confirmpass = request.POST['new_password2']
+        try:
+            if newpass == confirmpass:
+                user = User.objects.get(id=request.user.id)
+                if user.check_password(old):
+                    user.set_password(newpass)
+                    user.save()
+                    messages.success(request, 'Change Password Successfully')
+                else:
+                    messages.warning(request, 'Old Password not matched')
+            else:
+                messages.warning(request, 'Old Password and New Password are different')
+        except:
+            messages.warning(request, 'Failed to Change Password')
+        return render(request, "changepwd-admin.html", locals())
 
 
 def logoutview(request):
@@ -249,19 +273,108 @@ def view_donationdetail(request, pid):
 
 # donor dashboard
 def index_donor(request):
-    return render(request, "index-donor.html")
+    if not request.user.is_authenticated:
+        return redirect('/login-donor')
+    user = request.user
+    donor = Donor.objects.get(user=user)
+    donationcount = Donation.objects.filter(donor=donor).count()
+    acceptedcount = Donation.objects.filter(donor=donor,status="accept").count()
+    rejectedcount = Donation.objects.filter(donor=donor,status="reject").count()
+    pendingcount = Donation.objects.filter(donor=donor,status="pending").count()
+    deliveredcount = Donation.objects.filter(donor=donor,status="Donation Delivered Successfully").count()
+    return render(request, "index-donor.html",locals())
 
 
-def donate_now(request):
-    return render(request, "donate-now.html")
+class donate_now(View):
+    def get(self,request):
+        form = DonateNowForm()
+        return render(request, "donate-now.html",locals())
+    def post(self, request):
+        print("POST request received.")
+        
+        if not request.user.is_authenticated:
+            print("User not authenticated, redirecting to login.")
+            return redirect('/login-donor')
+
+        form = DonateNowForm(request.POST, request.FILES)
+        if form.is_valid():
+            print("Form is valid. Processing donation...")
+            user = request.user
+            donor = Donor.objects.get(user=user)
+
+            donationname = form.cleaned_data['donationname']
+            donationpic = request.FILES['donationpic']
+            collectionloc = form.cleaned_data['collectionloc']
+            description = form.cleaned_data['description']
+
+            try:
+                Donation.objects.create(
+                    donor=donor,
+                    donationname=donationname,
+                    donationpic=donationpic,
+                    collectionloc=collectionloc,
+                    description=description,
+                    status="pending",
+                    donationdate=date.today()
+                )
+                messages.success(request, 'Donation successful!')
+                print("Donation created successfully.")
+            except Exception as e:
+                messages.warning(request, f'Failed to make a donation: {str(e)}')
+                print(f"Error occurred: {e}")
+        else:
+            print("Form is not valid.")
+            messages.error(request, 'Please correct the errors below.')
+
+        print("Rendering form with errors.")
+        return render(request, 'donate-now.html', {'form': form})
 
 
 def donation_history(request):
-    return render(request, "donation-history.html")
+    if not request.user.is_authenticated:
+        return redirect('/login-donor')
+    user = request.user
+    donor = Donor.objects.get(user=user)
+    donation = Donation.objects.filter(donor=donor)
+    return render(request, "donation-history.html", locals())
 
 
-def profile_donor(request):
-    return render(request, "profile-donor.html")
+class profile_donor(View):
+    def get(self,request):
+        form1 = Userform()
+        form2 = DonorSignupForm()
+        user = request.user
+        donor = Donor.objects.get(user=user)
+        return render(request, "profile-donor.html",locals())
+    def post(self,request):
+        if not request.user.is_authenticated:
+            return redirect('/login-donor')
+        form1 = Userform(request.POST)
+        form2 = DonorSignupForm(request.POST)
+        
+        user = request.user
+        donor = Donor.objects.get(user=user)
+        
+        fn = request.POST['firstname']
+        ln = request.POST['lastname']
+        contact = request.POST['contact']
+        address = request.POST['address']
+        
+        donor.user.first_name = fn
+        donor.user.last_name = ln
+        donor.contact = contact
+        donor.address = address
+        
+        try:
+            userpic = request.FILES['userpic']
+            donor.userpic = userpic
+            donor.save()
+            donor.user.save()
+            messages.success(request,'Profile Updated Successfully')
+        except Exception as e:
+            messages.warning(request, 'Profile Update Failed'+e)
+        return render(request,"profile-donor.html",locals())
+        
 
 
 class changepwd_donor(View):
@@ -316,13 +429,39 @@ def profile_volunteer(request):
     return render(request, "profile-volunteer.html")
 
 
-def changepwd_volunteer(request):
-    return render(request, "changepwd-volunteer.html")
+class changepwd_volunteer(View):
+    def get(self,request):
+        form = MyPasswordChangeForm(request.user)
+        return render(request, "changepwd-volunteer.html", locals())
+    def post(self,request):
+        form = MyPasswordChangeForm(request.user, request.POST)
+        if not request.user.is_authenticated:
+            return redirect('login_volunteer')
+        old = request.POST['old_password']
+        newpass = request.POST['new_password1']
+        confirmpass = request.POST['new_password2']
+        try:
+            if newpass == confirmpass:
+                user = User.objects.get(id=request.user.id)
+                if user.check_password(old):
+                    user.set_password(newpass)
+                    user.save()
+                    messages.success(request, 'Change Password Successfully')
+                else:
+                    messages.warning(request, 'Old Password not matched')
+            else:
+                messages.warning(request, 'Old Password and New Password are different')
+        except:
+            messages.warning(request, 'Failed to Change Password')
+        return render(request, "changepwd-volunteer.html", locals())
 
 
 # view details
 def donationdetail_donor(request, pid):
-    return render(request, "donationdetail-donor.html")
+    if not request.user.is_authenticated:
+        return redirect('/login-donor')
+    donation = Donation.objects.get(id=pid)
+    return render(request, "donationdetail-donor.html", locals())
 
 
 def donationcollection_detail(request, pid):

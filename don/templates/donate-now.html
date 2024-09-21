@@ -5,44 +5,30 @@
     <h3>Donate Now</h3>
     <hr>
     <div class="row">
-        <div class="col-sm-12 p-2">
-            <div class="form-group">
-                <label>Donation Name <span style = "color : red">(Note :  If u select other , plz mention detail in description field )</span></label>
-                <select name="donationname"  class="form-control">
-                    <option value="Food Donation">Food Donation</option>
-                    <option value="Cloth Donation">Cloth Donation</option>
-                    <option value="Footwear Donation">Footwear Donation</option>
-                    <option value="Books Donation">Books Donation</option>
-                    <option value="Furniture Donation">Furniture Donation</option>
-                    <option value="Vessel Donation">Vessel Donation</option>
-                     <option value="Other">Other</option>
-                </select>
+        <form action="{% url "donate_now" %}" method="post" enctype="multipart/form-data" novalidate>
+            {% csrf_token %}
+            {% for i in form %}
+                <div class="form-group col-sm-12 p-3">
+                    {{i.label_tag}} {{i}} <small class="text-danger">{{i.errors|striptags}}</small>
+                </div>
+            {% endfor %}
+            <div class="d-grid gap-2">
+                <input type="submit" value="Submit" class="mt-4 px-3 btn btn-primary">
             </div>
-        </div>
 
-        <div class="col-sm-12 p-2">
-            <div class="form-group">
-                <label>Donation Image(Pic of Items u want to donate)</label>
-                <input type="file" name="donationpic" class="form-control" >
-            </div>
-        </div>
+        </form>
 
-        <div class="col-sm-12 p-2">
-            <div class="form-group">
-                <label>Donation Collection Address</label>
-                <textarea name="collectionloc"  class="form-control" placeholder="Enter Full Address"></textarea>
-            </div>
-        </div>
-
-        <div class="col-sm-12 p-2">
-            <div class="form-group">
-                <label>Description(Special Note)</label>
-                <textarea name="description" class="form-control" placeholder="Special note for donation"></textarea>
-            </div>
-        </div>
-
-    
-    <input type="submit" value="Donate Happiness" class="m-2 px-3 btn btn-danger">
 </div>
+{% if form.non_field_errors %}
+{% for error in form.non_field_errors %}
+    <p class="alert alert-danger my-3">{{error}}</p>
+{% endfor %}
+{% endif %}
+
+{% if messages %}
+{% for message in messages %}
+  <p {% if message.tag %} class="alert alert-{{message.tags}} my-5" {% endif %}>{{message}}</p>
+{% endfor %}
+{% endif %}
   </div>
 {% endblock main %}

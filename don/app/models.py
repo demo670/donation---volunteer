@@ -54,7 +54,7 @@ class Donation(models.Model):
     collectionloc = models.CharField(max_length=300, null=True)
     description = models.CharField(max_length=300, null=True)
     status = models.CharField(max_length=30, null=True)
-    donationdate = models.ImageField(null=True)
+    donationdate = models.DateTimeField(null=True)
     adminremark = models.CharField(max_length=200, null=True)
     volunteer = models.ForeignKey(Volunteer, on_delete=models.CASCADE, null=True)
     donationarea =models.ForeignKey(DonationArea, on_delete=models.CASCADE, null=True)
@@ -62,7 +62,7 @@ class Donation(models.Model):
     updationdate = models.DateField(null=True)
     
     def __str__(self):
-        return self.id
+        return self.donationname
     
 
 class Gallery(models.Model):

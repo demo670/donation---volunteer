@@ -18,6 +18,8 @@ from django.urls import path
 from app import views
 from django.conf import settings
 from django.conf.urls.static import static
+from django.contrib.auth import views as auth_views
+from app.forms import MyPasswordResetForm, MySetPasswordForm
 
 urlpatterns = [
     path("admin/", admin.site.urls),
@@ -29,6 +31,17 @@ urlpatterns = [
     path("signup-donor/", views.signup_donor.as_view(), name="signup_donor"),
     path("signup-volunteer/", views.signup_volunteer.as_view(), name="signup_volunteer"),
     path("index-admin/", views.index_admin, name="index_admin"),
+    
+    ### Password Reset
+    path('password-reset/', auth_views.PasswordResetView.as_view(template_name='password_reset.html',
+        form_class=MyPasswordResetForm), name='password_reset'),
+    path('password-reset/done/', auth_views.PasswordResetDoneView.as_view(template_name='password_reset_done.html'),
+        name='password_reset_done'),
+    path('password-reset-confirm/<uidb64>/<token>/', auth_views.PasswordResetConfirmView.as_view(template_name='password_reset_confirm.html',form_class=MySetPasswordForm),
+        name='password_reset_confirm'),
+    path('password-reset-complete/', auth_views.PasswordResetCompleteView.as_view(template_name='password_reset_complete.html'),name='password_reset_complete'),
+    
+    ### admin dashboard
     path("pending-donation/", views.pending_donation, name="pending_donation"),
     path("accepted-donation/", views.accepted_donation, name="accepted_donation"),
     path("rejected-donation/", views.rejected_donation, name="rejected_donation"),
@@ -53,7 +66,7 @@ urlpatterns = [
     path("add-area/", views.add_area, name="add_area"),
     path("edit-area/<int:pid>", views.edit_area, name="edit_area"),
     path("manage-area/", views.manage_area, name="manage_area"),
-    path("changepwd-admin/", views.changepwd_admin, name="changepwd_admin"),
+    path("changepwd-admin/", views.changepwd_admin.as_view(), name="changepwd_admin"),
     path("logout/", views.logoutview, name="logout"),
     path(
         "accepted-donationdetail/<int:pid>",views.accepted_donationdetail,
@@ -70,9 +83,9 @@ urlpatterns = [
     ),
     # donar dashboard
     path("index-donor/", views.index_donor, name="index_donor"),
-    path("donate-now/", views.donate_now, name="donate_now"),
+    path("donate-now/", views.donate_now.as_view(), name="donate_now"),
     path("donation-history/", views.donation_history, name="donation_history"),
-    path("profile-donor/", views.profile_donor, name="profile_donor"),
+    path("profile-donor/", views.profile_donor.as_view(), name="profile_donor"),
     path("changepwd-donor/", views.changepwd_donor.as_view(), name="changepwd_donor"),
     # volunteer dashboard
     path("index-volunteer/", views.index_volunteer, name="index_volunteer"),
@@ -90,7 +103,7 @@ urlpatterns = [
         name="donationdelivered_volunteer",
     ),
     path("profile-volunteer/", views.profile_volunteer, name="profile_volunteer"),
-    path("changepwd-volunteer/", views.changepwd_volunteer, name="changepwd_volunteer"),
+    path("changepwd-volunteer/", views.changepwd_volunteer.as_view(), name="changepwd_volunteer"),
     # vew details
     path(
         "donationdetail-donor/<int:pid>",views.donationdetail_donor,

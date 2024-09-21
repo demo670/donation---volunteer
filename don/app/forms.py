@@ -1,7 +1,7 @@
 from django import forms
 from django.contrib.auth.models import User
-from .models import Donor,Volunteer
-from django.contrib.auth.forms import UserCreationForm, AuthenticationForm, UsernameField, PasswordChangeForm
+from .models import Donor,Volunteer, Donation, DONATION_CHOICES
+from django.contrib.auth.forms import UserCreationForm, AuthenticationForm, UsernameField, PasswordChangeForm, PasswordResetForm, SetPasswordForm
 from django.contrib.auth import password_validation
 
 class Loginform(AuthenticationForm):
@@ -64,3 +64,35 @@ class MyPasswordChangeForm(PasswordChangeForm):
     help_text = password_validation.password_validators_help_text_html())
     new_password2 = forms.CharField(label="Confirm New Password", strip=False, widget=forms.PasswordInput(attrs=
     {'autocomplete':'new-password', 'class':'form-control', 'placeholder':'Confirm password'}))
+
+
+class MyPasswordResetForm(PasswordResetForm):
+    email = forms.EmailField(label = "Email", max_length=254, widget=forms.EmailInput(attrs=
+    {'autocomplete':'email', 'class':'form-control'})),
+
+
+class MySetPasswordForm(SetPasswordForm):
+    new_password1 = forms.CharField(label="New Password", strip=False, widget=forms.PasswordInput(attrs=
+    {'autocomplete':'new-password', 'class':'form-control'}),
+    help_text = password_validation.password_validators_help_text_html())
+    new_password2 = forms.CharField(label="Confirm New Password", strip=False, widget=forms.PasswordInput(attrs=
+    {'autocomplete':'new-password', 'class':'form-control', 'placeholder':'Confirm password'}))
+
+
+class DonateNowForm(forms.ModelForm):
+    donationpic = forms.ImageField()
+    class Meta:
+        model= Donation
+        fields=['donationname','donationpic','collectionloc','description']
+        widgets={
+            'donationname':forms.Select(choices=DONATION_CHOICES,attrs={'class':'form-control'}),
+            'collectionloc':forms.TextInput(attrs={'class':'form-control', 'placeholder':'Donation Collection Address'}),
+            'description':forms.Textarea(attrs={'class':'form-control', 'placeholder':'Description (Special Note)'}),
+            'donationpic':forms.FileInput(attrs={'class':'form-control'}),
+        }
+        labels={
+            'donationname':"Donation Name",
+            'collectionloc':"Donation Collection Address",
+            'description':"Description (Special Note)",
+            'donationpic':"Donation Image(Pic of Items u want to donate)"
+        }

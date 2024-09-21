@@ -1,6 +1,6 @@
 from django import forms
 from django.contrib.auth.models import User
-from .models import Donor,Volunteer, Donation, DONATION_CHOICES
+from .models import Donor,Volunteer, Donation, DONATION_CHOICES, DonationArea
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm, UsernameField, PasswordChangeForm, PasswordResetForm, SetPasswordForm
 from django.contrib.auth import password_validation
 
@@ -96,3 +96,18 @@ class DonateNowForm(forms.ModelForm):
             'description':"Description (Special Note)",
             'donationpic':"Donation Image(Pic of Items u want to donate)"
         }
+
+
+class DonationAreaForm(forms.ModelForm):
+    class Meta:
+        model = DonationArea
+        fields = ['areaname','description']
+        widgets = {
+            'areaname':forms.TextInput(attrs={'class':'form-control', 'placeholder':'Donation Area'}),
+            'description':forms.Textarea(attrs={'class':'form-control', 'placeholder':'Description'}),
+        }
+        labels={
+            "areaname":"Donation Area Name",
+            "description":"Description",
+        }
+        

@@ -63,7 +63,7 @@ urlpatterns = [
     path("accepted-volunteer/", views.accepted_volunteer, name="accepted_volunteer"),
     path("rejected-volunteer/", views.rejected_volunteer, name="rejected_volunteer"),
     path("all-volunteer/", views.all_volunteer, name="all_volunteer"),
-    path("add-area/", views.add_area, name="add_area"),
+    path("add-area/", views.add_area.as_view(), name="add_area"),
     path("edit-area/<int:pid>", views.edit_area, name="edit_area"),
     path("manage-area/", views.manage_area, name="manage_area"),
     path("changepwd-admin/", views.changepwd_admin.as_view(), name="changepwd_admin"),
@@ -102,7 +102,7 @@ urlpatterns = [
         "donationdelivered-volunteer/",views.donationdelivered_volunteer,
         name="donationdelivered_volunteer",
     ),
-    path("profile-volunteer/", views.profile_volunteer, name="profile_volunteer"),
+    path("profile-volunteer/", views.profile_volunteer.as_view(), name="profile_volunteer"),
     path("changepwd-volunteer/", views.changepwd_volunteer.as_view(), name="changepwd_volunteer"),
     # vew details
     path(
@@ -117,6 +117,9 @@ urlpatterns = [
         "donationcollection-detail/<int:pid>",views.donationcollection_detail,
         name="donationcollection_detail",
     ),
+    path('delete_donation/<int:pid>',views.delete_donation, name='delete_donation'),
+    path('delete_volunteer/<int:pid>',views.delete_volunteer, name='delete_volunteer'),
+    path('delete_area/<int:pid>',views.delete_area, name='delete_area'),
 ]
 urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
 urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

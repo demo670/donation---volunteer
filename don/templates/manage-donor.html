@@ -16,14 +16,16 @@
               </tr>
         </thead>
         <tbody>
+          {% for i in donor %}
             <tr class="text-center">
-                <th>1</th>
-                <td>Nilesh</td>
-                <td>nilesh@gmail.com</td>
-                <td>9090909090</td>
-                <td> 02/02/2022</td>
-                <td><a href="{% url 'view_donordetail' 2 %}">View Details</a></td>
+                <th>{{forloop.counter}}</th>
+                <td>{{i.user.first_name}} {{i.user.last_name}}</td>
+                <td>{{i.user.email}}</td>
+                <td>{{i.contact}}</td>
+                <td>{{i.regdate}}</td>
+                <td><a href="{% url 'view_donordetail' i.id %}" class="text-primary">View Details</a></td>
               </tr>
+              {% endfor %}
         </tbody>
     </table>
   </div>

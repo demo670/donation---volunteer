@@ -1,10 +1,10 @@
 from django.shortcuts import redirect, render
 from django.views import View
-from .models import  Donor, Volunteer, Donation
+from .models import  Donor, Volunteer, Donation, DonationArea
 from django.contrib.auth.models import User
 from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
-from .forms import Userform, DonorSignupForm, VolunteerSignupForm, Loginform, MyPasswordChangeForm, DonateNowForm
+from .forms import Userform, DonorSignupForm, VolunteerSignupForm, Loginform, MyPasswordChangeForm, DonateNowForm, DonationAreaForm
 from datetime import date, datetime
 # Create your views here.
 def index(request):
@@ -153,65 +153,136 @@ class  signup_volunteer(View):
 
 
 def index_admin(request):
-    return render(request, "index-admin.html")
+    if not request.user.is_authenticated:
+        return redirect('/login-admin')
+    totaldonations = Donation.objects.all().count()
+    totaldonors = Donor.objects.all().count()
+    totalvolunteers = Volunteer.objects.all().count()
+    totalpendingdonations = Donation.objects.filter(status="pending").count()
+    totalacceptdonations = Donation.objects.filter(status="Accept").count()
+    totaldelivereddonations = Donation.objects.filter(status="Donation Delivered Successfully").count()
+    totaldonationareas = DonationArea.objects.all().count()
+    return render(request, "index-admin.html",locals())
 
 
 
 # admin dashboard
 def pending_donation(request):
-    return render(request, "pending-donation.html")
+    if not request.user.is_authenticated:
+        return redirect('/login-admin')
+    donation = Donation.objects.filter(status='pending')
+    return render(request, "pending-donation.html", locals())
 
 
 def accepted_donation(request):
-    return render(request, "accepted-donation.html")
+    if not request.user.is_authenticated:
+        return redirect('/login-admin')
+    donation = Donation.objects.filter(status='accept')
+    return render(request, "accepted-donation.html", locals())
 
 
 def rejected_donation(request):
-    return render(request, "rejected-donation.html")
+    if not request.user.is_authenticated:
+        return redirect('/login-admin')
+    donation = Donation.objects.filter(status='reject')
+    return render(request, "rejected-donation.html", locals())
 
 
 def volunteerallocated_donation(request):
-    return render(request, "volunteerallocated-donation.html")
+    if not request.user.is_authenticated:
+        return redirect('/login-admin')
+    donation = Donation.objects.filter(status='Volunteer Allocated')
+    return render(request, "volunteerallocated-donation.html", locals())
 
 
 def donationrec_admin(request):
-    return render(request, "donationrec-admin.html")
+    if not request.user.is_authenticated:
+        return redirect('/login-admin')
+    donation = Donation.objects.filter(status='Donation Received')
+    return render(request, "donationrec-admin.html", locals())
 
 
 def donationnotrec_admin(request):
-    return render(request, "donationnotrec-admin.html")
+    if not request.user.is_authenticated:
+        return redirect('/login-admin')
+    donation = Donation.objects.filter(status='Donation NotReceived')
+    return render(request, "donationnotrec-admin.html", locals())
 
 
 def donationdelivered_admin(request):
-    return render(request, "donationdelivered-admin.html")
+    if not request.user.is_authenticated:
+        return redirect('/login-admin')
+    donation = Donation.objects.filter(status='Donation Delivered Auccessfully')
+    return render(request, "donationdelivered-admin.html", locals())
 
 
 def all_donations(request):
-    return render(request, "all-donations.html")
+    if not request.user.is_authenticated:
+        return redirect('/login-admin')
+    donation = Donation.objects.all()
+    return render(request, "all-donations.html", locals())
 
+def delete_donation(request, pid):
+    donation = Donation.objects.get(id=pid)
+    donation.delete()
+    return redirect('all_donations')
 
 def manage_donor(request):
-    return render(request, "manage-donor.html")
+    if not request.user.is_authenticated:
+        return redirect('/login-admin')
+    donor = Donor.objects.all()
+    return render(request, "manage-donor.html", locals())
 
 
 def new_volunteer(request):
-    return render(request, "new-volunteer.html")
+    if not request.user.is_authenticated:
+        return redirect('/login-admin')
+    volunteer = Volunteer.objects.filter(status='pending')
+    return render(request, "new-volunteer.html", locals())
 
 
 def accepted_volunteer(request):
-    return render(request, "accepted-volunteer.html")
+    if not request.user.is_authenticated:
+        return redirect('/login-admin')
+    volunteer = Volunteer.objects.filter(status='accept')
+    return render(request, "accepted-volunteer.html", locals())
 
 
 def rejected_volunteer(request):
-    return render(request, "rejected-volunteer.html")
+    if not request.user.is_authenticated:
+        return redirect('/login-admin')
+    volunteer = Volunteer.objects.filter(status='reject')
+    return render(request, "rejected-volunteer.html", locals())
 
 
 def all_volunteer(request):
-    return render(request, "all-volunteer.html")
+    if not request.user.is_authenticated:
+        return redirect('/login-admin')
+    volunteer = Volunteer.objects.all()
+    return render(request, "all-volunteer.html", locals())
 
+def delete_volunteer(request,pid):
+    user= User.objects.get(id=pid)
+    user.delete()
+    return redirect('all_volunteer')
 
-def add_area(request):
-    return render(request, "add-area.html")
+class add_area(View):
+    def get(self,request):
+        form = DonationAreaForm()
+        return render(request, "add-area.html", locals())
+    def post(self,request):
+        form = DonationAreaForm(request.POST)
+        if not request.user.is_authenticated:
+            return redirect('/login-admin')
+        areaname = request.POST['areaname']
+        des = request.POST['description']
+        try:
+            DonationArea.objects.create(areaname=areaname,description=des)
+            messages.success(request, 'Area Added Successfully')
+        except:
+            messages.warning(request, 'Area Not Added')
+        return render(request, "add-area.html", locals())
+        
 
 
 def edit_area(request, pid):
@@ -219,7 +290,17 @@ def edit_area(request, pid):
 
 
 def manage_area(request):
-    return render(request, "manage-area.html")
+    if not request.user.is_authenticated:
+        return redirect('/login-admin')
+    area = DonationArea.objects.all()
+    return render(request, "manage-area.html", locals())
+
+def delete_area(request,pid):
+    if not request.user.is_authenticated:
+        return redirect('/login-admin')
+    area = DonationArea.objects.get(id=pid)
+    area.delete()
+    return redirect('manage_area')
 
 
 class changepwd_admin(View):
@@ -406,27 +487,99 @@ class changepwd_donor(View):
 
 # volunteer dashboard
 def index_volunteer(request):
-    return render(request, "index-volunteer.html")
+    if not request.user.is_authenticated:
+        return redirect('/login-volunteer')
+    user = request.user
+    volunteer = Volunteer.objects.get(user=user)
+    totalCollectionReq = Donation.objects.filter(volunteer=volunteer,status="Volunteer Allocated").count()
+    totalRecDonation = Donation.objects.filter(volunteer=volunteer,status="Donation Received").count()
+    totalNotRecDonation = Donation.objects.filter(volunteer=volunteer,status="Donation NotReceived").count()
+    totalDonationDelivered = Donation.objects.filter(volunteer=volunteer,status="Donation Delivered Successfully").count()
+
+    return render(request, "index-volunteer.html",locals())
 
 
 def collection_req(request):
-    return render(request, "collection-req.html")
+    if not request.user.is_authenticated:
+        return redirect('/login-volunteer')
+    user = request.user
+    volunteer = Volunteer.objects.get(user=user)
+    donation = Donation.objects.filter(volunteer=volunteer,status="Volunteer Allocated")
+    return render(request, "collection-req.html", locals())
 
 
 def donationrec_volunteer(request):
-    return render(request, "donationrec-volunteer.html")
+    if not request.user.is_authenticated:
+        return redirect('/login-volunteer')
+    user = request.user
+    volunteer = Volunteer.objects.get(user=user)
+    donation = Donation.objects.filter(volunteer=volunteer,status="Donation Received")
+    return render(request, "donationrec-volunteer.html",locals())
 
 
 def donationnotrec_volunteer(request):
+    if not request.user.is_authenticated:
+        return redirect('/login-volunteer')
+    user = request.user
+    volunteer = Volunteer.objects.get(user=user)
+    donation = Donation.objects.filter(volunteer=volunteer,status="Donation NotReceived")
     return render(request, "donationnotrec-volunteer.html")
 
 
 def donationdelivered_volunteer(request):
+    if not request.user.is_authenticated:
+        return redirect('/login-volunteer')
+    user = request.user
+    volunteer = Volunteer.objects.get(user=user)
+    donation = Donation.objects.filter(volunteer=volunteer,status="Donation Delivered Successfully")
     return render(request, "donationdelivered-volunteer.html")
 
 
-def profile_volunteer(request):
-    return render(request, "profile-volunteer.html")
+class profile_volunteer(View):
+    def get(self,request):
+        form1 = Userform()
+        form2 = VolunteerSignupForm()
+        user = request.user
+        volunteer = Volunteer.objects.get(user=user)
+        return render(request, "profile-volunteer.html",locals())
+    def post(self,request):
+        if not request.user.is_authenticated:
+            return redirect('/login-volunteer')
+        form1 = Userform(request.POST)
+        form2 = VolunteerSignupForm(request.POST)
+        
+        user = request.user
+        volunteer = Volunteer.objects.get(user=user)
+        
+        fn = request.POST['firstname']
+        ln = request.POST['lastname']
+        contact = request.POST['contact']
+        address = request.POST['address']
+        aboutme = request.POST['aboutme']
+        
+        volunteer.user.first_name = fn
+        volunteer.user.last_name = ln
+        volunteer.contact = contact
+        volunteer.address = address
+        volunteer.aboutme = aboutme
+        
+        try:
+            userpic = request.FILES.get('userpic', None)
+            if userpic:
+                volunteer.userpic = userpic
+            
+            idpic = request.FILES.get('idpic', None)
+            if idpic:
+                volunteer.idpic = idpic
+            
+            volunteer.save()
+            volunteer.user.save()
+            messages.success(request, 'Profile Updated Successfully')
+        except Exception as e:
+            messages.warning(request, 'Profile Update Failed: ' + str(e))
+        
+        return render(request, "profile-volunteer.html", locals())
+    
 
 
 class changepwd_volunteer(View):

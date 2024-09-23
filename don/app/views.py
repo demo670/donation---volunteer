@@ -285,8 +285,29 @@ class add_area(View):
         
 
 
-def edit_area(request, pid):
-    return render(request, "edit-area.html")
+class edit_area(View):
+    def get(self,request,pid):
+        form = DonationAreaForm()
+        area = DonationArea.objects.get(id=pid)
+        return render(request, "edit-area.html", locals())
+    def post(self,request,pid):
+        if not request.user.is_authenticated:
+            return redirect('/login-admin')
+        form = DonationAreaForm(request.POST)
+        area = DonationArea.objects.get(id=pid)
+        areaname = request.POST['areaname']
+        description = request.POST['description']
+        
+        area.areaname = areaname
+        area.description = description
+        
+        try:
+            area.save()
+            messages.success(request,'Area Updated Successfully')
+            return redirect('manage_area')
+        except:
+            messages.warning(request,'Area Not Updated')
+        return render(request, "edit-area.html", locals())
 
 
 def manage_area(request):
@@ -348,8 +369,31 @@ def view_donordetail(request, pid):
     return render(request, "view-donordetail.html")
 
 
-def view_donationdetail(request, pid):
-    return render(request, "view-donationdetail.html")
+class view_donationdetail(View):
+    def get(self, request, pid):
+        donation = Donation.objects.get(id=pid)
+        return render(request, "view-donationdetail.html", locals())
+    def post(self,request,pid):
+        if not request.user.is_authenticated:
+            return redirect('/login-admin')
+        donation = Donation.objects.get(id=pid)
+        status = request.POST['status']
+        adminremark = request.POST['adminremark']
+        
+        try:
+            donation.adminremark = adminremark
+            donation.status = status
+            donation.updationdate = date.today()
+            donation.save()
+            messages.success(request,'Status & Remark Updated Successfully')
+        except:
+            messages.warning(request,'Failed to Update Status & Remark')
+        return render(request,"view-donationdetail.html",locals())
+            
+def delete_donor(request,pid):
+    user = User.objects.get(id=pid)
+    user.delete()
+    return redirect('manage_donor')   
 
 
 # donor dashboard

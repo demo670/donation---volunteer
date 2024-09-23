@@ -64,7 +64,7 @@ urlpatterns = [
     path("rejected-volunteer/", views.rejected_volunteer, name="rejected_volunteer"),
     path("all-volunteer/", views.all_volunteer, name="all_volunteer"),
     path("add-area/", views.add_area.as_view(), name="add_area"),
-    path("edit-area/<int:pid>", views.edit_area, name="edit_area"),
+    path("edit-area/<int:pid>", views.edit_area.as_view(), name="edit_area"),
     path("manage-area/", views.manage_area, name="manage_area"),
     path("changepwd-admin/", views.changepwd_admin.as_view(), name="changepwd_admin"),
     path("logout/", views.logoutview, name="logout"),
@@ -78,7 +78,7 @@ urlpatterns = [
     ),
     path("view-donordetail/<int:pid>", views.view_donordetail, name="view_donordetail"),
     path(
-        "view-donationdetail/<int:pid>",views.view_donationdetail,
+        "view-donationdetail/<int:pid>",views.view_donationdetail.as_view(),
         name="view_donationdetail",
     ),
     # donar dashboard
@@ -120,6 +120,7 @@ urlpatterns = [
     path('delete_donation/<int:pid>',views.delete_donation, name='delete_donation'),
     path('delete_volunteer/<int:pid>',views.delete_volunteer, name='delete_volunteer'),
     path('delete_area/<int:pid>',views.delete_area, name='delete_area'),
+    path('delete-donor/<int:pid>', views.delete_donor, name='delete_donor'),
 ]
 urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
 urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
